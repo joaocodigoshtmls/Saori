@@ -18,6 +18,32 @@ npm install
 npm run dev
 ```
 
+## Estrutura
+
+```text
+app/
+  page.jsx
+components/
+  HistoryPanel.jsx
+  ImportPdfBox.jsx
+  PerformancePanel.jsx
+  QuestionCard.jsx
+  QuestionList.jsx
+  TopicList.jsx
+lib/
+  export/
+  grading/
+  pdf/
+  performance/
+  questions/
+  storage/
+  utils/
+```
+
+## Desempenho
+
+O painel "Meu desempenho" usa o histórico de respostas para mostrar total respondido, acertos, respostas parciais, sequência de dias, desempenho por tópico, desempenho por tipo de questão e questões mais erradas.
+
 ## Formato do PDF
 
 Separe cada questão com `---`.
