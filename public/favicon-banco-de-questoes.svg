@@ -1,0 +1,25 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Banco de Questões</title>
+  <desc>Favicon com documento, ponto de interrogação e marca de correção.</desc>
+
+  <!-- Fundo -->
+  <rect width="64" height="64" rx="14" fill="#0F72F2"/>
+
+  <!-- Documento -->
+  <path d="M20 12H40L50 22V48C50 50.2 48.2 52 46 52H20C17.8 52 16 50.2 16 48V16C16 13.8 17.8 12 20 12Z" fill="white"/>
+
+  <!-- Dobra do documento -->
+  <path d="M40 12V22H50L40 12Z" fill="#CFE3FF"/>
+
+  <!-- Linhas da questão -->
+  <rect x="23" y="20" width="13" height="3" rx="1.5" fill="#93BDF7"/>
+  <rect x="23" y="26" width="23" height="3" rx="1.5" fill="#93BDF7"/>
+
+  <!-- Ponto de interrogação -->
+  <path d="M32.1 40.2C32.1 36.4 36.7 36.4 36.7 32.5C36.7 29.8 34.6 27.9 31.6 27.9C28.6 27.9 26.7 29.5 25.8 31.7L29.4 33.2C29.8 32.1 30.5 31.4 31.6 31.4C32.6 31.4 33.3 32 33.3 32.9C33.3 35.1 28.9 35.7 28.9 40.2H32.1Z" fill="#0F72F2"/>
+  <circle cx="30.5" cy="45" r="2.1" fill="#0F72F2"/>
+
+  <!-- Badge de correção -->
+  <circle cx="46" cy="46" r="10" fill="#22C55E"/>
+  <path d="M41.3 46.1L44.5 49.3L51.2 42.4" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
