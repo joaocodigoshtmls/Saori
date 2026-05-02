@@ -5,18 +5,11 @@ Projeto em Next.js com Tailwind para importar questões por PDF, organizar por t
 ## Como rodar
 
 ```bash
-pnpm install
-pnpm dev
-```
-
-Depois abra `http://localhost:3000`.
-
-Se preferir npm:
-
-```bash
 npm install
 npm run dev
 ```
+
+Depois abra `http://localhost:3000`.
 
 ## Estrutura
 

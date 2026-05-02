@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-white/90 backdrop-blur">
       <nav className="mx-auto flex max-w-[1380px] items-center justify-between gap-3 px-4 py-3">
@@ -16,10 +21,10 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-2 md:flex">
-          <NavLink href="/">Questões</NavLink>
-          <NavLink href="/performance">Desempenho</NavLink>
-          <NavLink href="/history">Histórico</NavLink>
-          <NavLink href="/games">Mini-games</NavLink>
+          <NavLink href="/" active={pathname === "/"}>Questões</NavLink>
+          <NavLink href="/performance" active={pathname === "/performance"}>Desempenho</NavLink>
+          <NavLink href="/history" active={pathname === "/history"}>Histórico</NavLink>
+          <NavLink href="/games" active={pathname === "/games"}>Mini-games</NavLink>
         </div>
 
         <Link
@@ -34,11 +39,13 @@ export default function Navbar() {
   );
 }
 
-function NavLink({ href, children }) {
+function NavLink({ href, active, children }) {
   return (
     <Link
       href={href}
-      className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-soft hover:text-ink"
+      className={`rounded-lg px-3 py-2 text-sm font-medium ${
+        active ? "bg-soft text-ink" : "text-muted hover:bg-soft hover:text-ink"
+      }`}
       prefetch
     >
       {children}
