@@ -6,7 +6,7 @@ export default function PerformancePanel({ performance }) {
     : 0;
 
   return (
-    <section className="mt-5 rounded-lg border border-line bg-white p-4 sm:p-5">
+    <section id="desempenho" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-4 sm:p-5">
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-muted">Meu desempenho</p>

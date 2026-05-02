@@ -22,7 +22,10 @@ npm run dev
 
 ```text
 app/
+  games/page.jsx
+  history/page.jsx
   page.jsx
+  performance/page.jsx
 components/
   HistoryPanel.jsx
   ImportPdfBox.jsx
@@ -40,9 +43,22 @@ lib/
   utils/
 ```
 
+## Páginas
+
+- `/`: questões, tópicos e importação de PDF.
+- `/performance`: painel de desempenho.
+- `/history`: histórico de respostas.
+- `/games`: área reservada para mini-games.
+
 ## Desempenho
 
 O painel "Meu desempenho" usa o histórico de respostas para mostrar total respondido, acertos, respostas parciais, sequência de dias, desempenho por tópico, desempenho por tipo de questão e questões mais erradas.
+
+O histórico é armazenado completo; a tela mostra apenas os registros mais recentes. A sequência de dias usa o fuso `America/Sao_Paulo`.
+
+## Importação
+
+Ao importar um PDF, o Saori separa questões válidas de blocos com problema. Se algum bloco não tiver campos obrigatórios, a tela mostra uma lista com o número do bloco e o motivo do erro.
 
 ## Formato do PDF
 

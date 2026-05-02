@@ -1,25 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import HistoryPanel from "@/components/HistoryPanel";
 import ImportPdfBox from "@/components/ImportPdfBox";
-import PerformancePanel from "@/components/PerformancePanel";
+import Navbar from "@/components/Navbar";
 import QuestionCard from "@/components/QuestionCard";
 import QuestionList from "@/components/QuestionList";
 import TopicList from "@/components/TopicList";
 import { exportTopicPdf } from "@/lib/export/exportTopicPdf";
 import { gradeDiscursive } from "@/lib/grading/gradeDiscursive";
 import { gradeMultiple } from "@/lib/grading/gradeMultiple";
-import { buildPerformance } from "@/lib/performance/buildPerformance";
 import { extractPdfText } from "@/lib/pdf/extractPdfText";
 import { parseQuestionsFromText } from "@/lib/pdf/parseQuestions";
 import { groupByTopic, mergeQuestions } from "@/lib/questions/questionLibrary";
-import { sampleQuestions } from "@/lib/questions/sampleQuestions";
+import { HISTORY_KEY, STORAGE_KEY } from "@/lib/storage/keys";
 import { readStorage, writeStorage } from "@/lib/storage/questionStorage";
 import { normalize } from "@/lib/utils/text";
 
-const STORAGE_KEY = "question-library-v2";
-const HISTORY_KEY = "question-history-v2";
 const EXPORT_MINIMUM = 100;
 
 export default function Home() {
@@ -31,8 +27,10 @@ export default function Home() {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [importStatus, setImportStatus] = useState(null);
+  const [importErrors, setImportErrors] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [startedAt, setStartedAt] = useState(Date.now());
 
   useEffect(() => {
@@ -78,8 +76,6 @@ export default function Home() {
     return questions.find((question) => question.code === selectedCode) || topicQuestions[0] || questions[0] || null;
   }, [questions, selectedCode, topicQuestions]);
 
-  const performance = useMemo(() => buildPerformance(history), [history]);
-
   function selectTopic(topicName) {
     const firstQuestion = questions.find((question) => question.topic === topicName);
     setSelectedTopic(topicName);
@@ -94,30 +90,27 @@ export default function Home() {
     setFeedback(null);
   }
 
-  function addExamples() {
-    setQuestions((current) => mergeQuestions(current, sampleQuestions));
-    setSelectedTopic(sampleQuestions[0].topic);
-    setSelectedCode(sampleQuestions[0].code);
-    setFeedback(null);
-    setImportStatus({ tone: "success", text: "Exemplos adicionados à biblioteca." });
-  }
-
   async function importPdf(event) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
 
     setIsImporting(true);
+    setImportErrors([]);
     setImportStatus({ tone: "neutral", text: "Lendo PDF..." });
 
     try {
       const text = await extractPdfText(file);
-      const importedQuestions = parseQuestionsFromText(text, file.name);
+      const importResult = parseQuestionsFromText(text, file.name);
+      const importedQuestions = importResult.questions;
+      setImportErrors(importResult.errors);
 
       if (!importedQuestions.length) {
         setImportStatus({
           tone: "error",
-          text: "Não encontrei questões no PDF. Use blocos separados por --- com TOPICO, CODIGO, TIPO, ENUNCIADO e os campos de resposta."
+          text: importResult.errors.length
+            ? "Nenhuma questão válida foi importada. Veja os blocos que precisam de ajuste."
+            : "Não encontrei blocos no PDF. Use blocos separados por --- com TOPICO, CODIGO, TIPO, ENUNCIADO e os campos de resposta."
         });
         return;
       }
@@ -129,7 +122,7 @@ export default function Home() {
       setFeedback(null);
       setImportStatus({
         tone: "success",
-        text: `${importedQuestions.length} questão${importedQuestions.length === 1 ? "" : "ões"} importada${importedQuestions.length === 1 ? "" : "s"} de ${file.name}.`
+        text: `${importedQuestions.length} questão${importedQuestions.length === 1 ? "" : "ões"} importada${importedQuestions.length === 1 ? "" : "s"} de ${file.name}.${importResult.errors.length ? ` ${importResult.errors.length} bloco${importResult.errors.length === 1 ? "" : "s"} precisa${importResult.errors.length === 1 ? "" : "m"} de ajuste.` : ""}`
       });
     } catch (error) {
       setImportStatus({ tone: "error", text: error.message || "Não foi possível ler o PDF." });
@@ -161,38 +154,74 @@ export default function Home() {
         date: new Date().toISOString()
       },
       ...current
-    ].slice(0, 100));
+    ]);
   }
 
   return (
-    <main className="min-h-screen p-3 text-ink sm:p-6">
-      <div className="mx-auto grid max-w-[1380px] gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="rounded-lg border border-line/90 bg-white/90 p-4 shadow-panel xl:min-h-[calc(100vh-48px)]">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent font-extrabold text-white">Q</div>
-            <div>
-              <h1 className="text-lg font-extrabold">Banco de Questões</h1>
-              <p className="text-sm text-muted">Biblioteca por tópico.</p>
+    <>
+    <Navbar />
+    <main id="top" className="min-h-screen scroll-mt-24 p-3 text-ink sm:p-6">
+      <div
+        className="mx-auto grid max-w-[1380px] gap-5 transition-[grid-template-columns] duration-300 ease-out xl:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
+        style={{ "--sidebar-width": isSidebarOpen ? "360px" : "0px" }}
+      >
+        <aside
+          className={`overflow-hidden rounded-lg transition-all duration-300 ease-out ${
+            isSidebarOpen
+              ? "max-h-[2200px] border border-line/90 bg-white/90 p-4 opacity-100 shadow-panel xl:min-h-[calc(100vh-48px)] xl:max-h-none"
+              : "pointer-events-none max-h-0 border-0 bg-transparent p-0 opacity-0 shadow-none xl:max-h-none"
+          }`}
+          aria-hidden={!isSidebarOpen}
+        >
+            <button
+              className="flex w-full items-center justify-between gap-3 rounded-lg border border-line bg-white px-3 py-3 text-left font-bold hover:bg-soft"
+              type="button"
+              onClick={() => setIsSidebarOpen(false)}
+              aria-expanded={isSidebarOpen}
+            >
+              <span>Ocultar biblioteca</span>
+              <span className="text-lg leading-none">−</span>
+            </button>
+
+            <div className="mt-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent font-extrabold text-white">Q</div>
+                <div>
+                  <h1 className="text-lg font-extrabold">Banco de Questões</h1>
+                  <p className="text-sm text-muted">Biblioteca por tópico.</p>
+                </div>
+              </div>
+
+              <ImportPdfBox
+                isImporting={isImporting}
+                importStatus={importStatus}
+                importErrors={importErrors}
+                onImportPdf={importPdf}
+              />
+
+              <TopicList
+                topics={topics}
+                selectedTopic={activeTopic}
+                totalQuestions={questions.length}
+                exportMinimum={EXPORT_MINIMUM}
+                onSelectTopic={selectTopic}
+              />
             </div>
-          </div>
-
-          <ImportPdfBox
-            isImporting={isImporting}
-            importStatus={importStatus}
-            onImportPdf={importPdf}
-            onAddExamples={addExamples}
-          />
-
-          <TopicList
-            topics={topics}
-            selectedTopic={activeTopic}
-            totalQuestions={questions.length}
-            exportMinimum={EXPORT_MINIMUM}
-            onSelectTopic={selectTopic}
-          />
         </aside>
 
-        <section className="rounded-lg border border-line/90 bg-white/90 p-4 shadow-panel sm:p-6 xl:min-h-[calc(100vh-48px)]">
+        <section className="rounded-lg border border-line/90 bg-white/90 p-4 shadow-panel transition-all duration-300 ease-out sm:p-6 xl:min-h-[calc(100vh-48px)]">
+          {!isSidebarOpen && (
+            <button
+              className="mb-4 flex w-fit items-center gap-3 rounded-lg border border-line bg-white px-4 py-3 font-bold transition hover:bg-soft"
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              aria-expanded={isSidebarOpen}
+            >
+              <span className="text-lg leading-none">+</span>
+              <span>Mostrar biblioteca</span>
+            </button>
+          )}
+
           <div className="grid gap-4 lg:grid-cols-[minmax(240px,340px)_minmax(0,1fr)]">
             <QuestionList
               topicName={activeTopic}
@@ -215,12 +244,11 @@ export default function Home() {
                 onAnswerChange={setAnswer}
                 onSubmit={gradeAnswer}
               />
-              <PerformancePanel performance={performance} />
-              <HistoryPanel history={history} onClear={() => setHistory([])} />
             </section>
           </div>
         </section>
       </div>
     </main>
+    </>
   );
 }

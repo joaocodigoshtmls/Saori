@@ -1,6 +1,6 @@
-export default function ImportPdfBox({ isImporting, importStatus, onImportPdf, onAddExamples }) {
+export default function ImportPdfBox({ isImporting, importStatus, importErrors, onImportPdf }) {
   return (
-    <section className="mt-5 rounded-lg border border-line bg-white p-3">
+    <section id="importar" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-3">
       <label className="grid cursor-pointer gap-3 rounded-lg border border-dashed border-accent/50 bg-soft p-4 text-center font-bold text-accent-strong">
         {isImporting ? "Importando..." : "Enviar PDF"}
         <input className="sr-only" type="file" accept="application/pdf" onChange={onImportPdf} disabled={isImporting} />
@@ -10,9 +10,16 @@ export default function ImportPdfBox({ isImporting, importStatus, onImportPdf, o
           {importStatus.text}
         </p>
       )}
-      <button className="mt-3 w-full rounded-lg border border-line bg-white px-4 py-3 font-bold hover:bg-soft" onClick={onAddExamples}>
-        Adicionar exemplos
-      </button>
+      {!!importErrors?.length && (
+        <div className="mt-3 rounded-lg border border-warn/30 bg-warn/10 p-3 text-sm text-warn">
+          <strong>Algumas questões não foram importadas:</strong>
+          <ul className="mt-2 list-disc pl-5">
+            {importErrors.map((error) => (
+              <li key={error.block}>{error.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

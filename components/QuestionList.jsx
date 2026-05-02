@@ -14,7 +14,7 @@ export default function QuestionList({
   onExportTopic
 }) {
   return (
-    <section className="rounded-lg border border-line bg-white p-4">
+    <section id="questoes" className="scroll-mt-24 rounded-lg border border-line bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-muted">Espaço do tópico</p>
