@@ -1,11 +1,7 @@
+import TimerGame from "@/components/games/TimerGame";
 import Navbar from "@/components/Navbar";
 
-const games = [
-  {
-    title: "Contra o Tempo",
-    status: "Próximo",
-    text: "Responda o máximo de questões possível em uma rodada curta."
-  },
+const plannedGames = [
   {
     title: "Boss Battle",
     status: "Planejado",
@@ -27,8 +23,12 @@ export default function GamesPage() {
           <p className="text-sm font-bold uppercase tracking-wide text-muted">Mini-games</p>
           <h1 className="mt-1 text-3xl font-extrabold leading-tight sm:text-4xl">Modos de estudo</h1>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {games.map((game) => (
+          <div className="mt-6">
+            <TimerGame />
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {plannedGames.map((game) => (
               <article key={game.title} className="rounded-lg border border-line bg-white p-4">
                 <span className="rounded-lg bg-soft px-3 py-1 text-sm font-bold text-muted">{game.status}</span>
                 <h2 className="mt-4 text-xl font-extrabold">{game.title}</h2>

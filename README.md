@@ -43,6 +43,17 @@ lib/
 - `/history`: histórico de respostas.
 - `/games`: área reservada para mini-games.
 
+## Mini-games
+
+O modo `Contra o Tempo` já está funcional em `/games`:
+
+- escolhe tópico;
+- escolhe duração de 1, 3 ou 5 minutos;
+- sorteia questões salvas;
+- corrige objetivas e discursivas;
+- pontua com `+10` por acerto, `+5` por parcial e `-3` por erro;
+- mostra o resultado final da rodada.
+
 ## Desempenho
 
 O painel "Meu desempenho" usa o histórico de respostas para mostrar total respondido, acertos, respostas parciais, sequência de dias, desempenho por tópico, desempenho por tipo de questão e questões mais erradas.
