@@ -15,17 +15,17 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/90 backdrop-blur">
-      <nav className="mx-auto max-w-[1380px] px-4 py-3">
+    <header className="sticky top-0 z-50 border-b border-line bg-white/80 backdrop-blur-xl">
+      <nav className="mx-auto max-w-7xl px-4 py-3 md:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2" prefetch onClick={() => setIsMenuOpen(false)}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink text-sm font-bold text-white">
+          <Link href="/" className="flex items-center gap-3" prefetch onClick={() => setIsMenuOpen(false)}>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-base font-extrabold text-white shadow-sm">
               S
             </div>
 
             <div>
-              <p className="text-sm font-bold leading-none text-ink">Saori</p>
-              <p className="text-xs text-muted">Banco de Questões</p>
+              <p className="text-sm font-extrabold leading-none text-text">Saori</p>
+              <p className="text-xs text-text-muted">Banco de Questões</p>
             </div>
           </Link>
 
@@ -40,7 +40,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <Link
               href="/#importar"
-              className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
+              className="btn-primary hidden md:inline-flex"
               prefetch
               onClick={() => setIsMenuOpen(false)}
             >
@@ -48,7 +48,7 @@ export default function Navbar() {
             </Link>
 
             <button
-              className="grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-xl font-bold md:hidden"
+              className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-xl font-bold md:hidden"
               type="button"
               onClick={() => setIsMenuOpen((current) => !current)}
               aria-expanded={isMenuOpen}
@@ -60,7 +60,7 @@ export default function Navbar() {
         </div>
 
         {isMenuOpen && (
-          <div className="mt-3 grid gap-2 rounded-lg border border-line bg-white p-2 md:hidden">
+          <div className="mt-3 grid gap-2 rounded-2xl border border-line bg-white p-2 shadow-sm md:hidden">
             {links.map((link) => (
               <NavLink
                 key={link.href}
@@ -71,6 +71,14 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
+            <Link
+              href="/#importar"
+              className="btn-primary mt-2"
+              prefetch
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Importar PDF
+            </Link>
           </div>
         )}
       </nav>
@@ -82,8 +90,8 @@ function NavLink({ href, active, children, onClick }) {
   return (
     <Link
       href={href}
-      className={`rounded-lg px-3 py-2 text-sm font-medium ${
-        active ? "bg-soft text-ink" : "text-muted hover:bg-soft hover:text-ink"
+      className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
+        active ? "bg-indigo-50 text-primary" : "text-text-muted hover:bg-slate-100 hover:text-text"
       }`}
       prefetch
       onClick={onClick}

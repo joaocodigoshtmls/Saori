@@ -132,21 +132,29 @@ export default function TimerGame() {
   }
 
   return (
-    <section className="rounded-lg border border-line bg-white p-4 sm:p-5">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+    <section className="section-card overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-5 text-white">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-muted">Mini-game</p>
-          <h2 className="mt-1 text-2xl font-extrabold">Contra o Tempo</h2>
-          <p className="mt-1 text-muted">Escolha um tópico, defina o tempo e responda o máximo que conseguir.</p>
+          <p className="text-sm font-semibold text-indigo-100">Mini-game</p>
+          <h2 className="mt-1 text-2xl font-extrabold tracking-tight">Contra o Tempo</h2>
+          <p className="mt-1 text-sm text-indigo-100">Escolha um tópico, defina o tempo e responda o máximo que conseguir.</p>
         </div>
-        <div className="rounded-lg bg-soft px-4 py-3 text-right">
-          <p className="text-sm font-bold text-muted">Tempo</p>
-          <strong className="text-2xl">{formatTime(timeLeft)}</strong>
+          <div className="flex gap-3">
+            <div className="rounded-2xl bg-white/15 px-4 py-3 backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-wide text-indigo-100">Tempo</p>
+              <p className="text-2xl font-extrabold">{formatTime(timeLeft)}</p>
+            </div>
+            <div className="rounded-2xl bg-white/15 px-4 py-3 backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-wide text-indigo-100">Pontos</p>
+              <p className="text-2xl font-extrabold">{score}</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {questions.length ? (
-        <>
+        <div className="p-4 sm:p-5">
           <div className="mt-5 grid gap-3 md:grid-cols-[1fr_220px_auto]">
             <label className="grid gap-2 text-sm font-bold text-muted">
               Tópico
@@ -207,22 +215,25 @@ export default function TimerGame() {
           )}
 
           {status === "running" && currentQuestion && (
-            <article key={`${currentQuestion.code}-${currentIndex}`} className="mt-5 rounded-lg border border-line p-4">
+            <article key={`${currentQuestion.code}-${currentIndex}`} className="mt-5 rounded-2xl border border-line bg-white p-5 shadow-sm">
               <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wide text-muted">{currentQuestion.code}</p>
-                  <h3 className="text-xl font-extrabold">{currentQuestion.topic}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="badge-neutral">{currentQuestion.topic}</span>
+                    <span className="badge-neutral">{currentQuestion.type === "multiple" ? "Objetiva" : "Discursiva"}</span>
+                    <span className="badge bg-indigo-100 text-indigo-700">{currentQuestion.code}</span>
+                  </div>
                 </div>
-                <span className="rounded-lg bg-soft px-3 py-2 text-sm font-bold text-muted">
+                <span className="rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-text-muted">
                   {currentIndex + 1}/{queue.length}
                 </span>
               </div>
 
-              <p className="mt-4 text-lg leading-8">{currentQuestion.statement}</p>
+              <p className="mt-4 text-xl font-extrabold leading-8 text-text">{currentQuestion.statement}</p>
 
               <form className="mt-5 grid gap-3" onSubmit={submitAnswer}>
                 {currentQuestion.type === "multiple" && currentQuestion.options.map((option) => (
-                  <label key={`${currentQuestion.code}-${option}`} className="grid grid-cols-[20px_1fr] items-start gap-3 rounded-lg border border-line bg-white p-3">
+                  <label key={`${currentQuestion.code}-${option}`} className="grid grid-cols-[20px_1fr] items-start gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-primary/40 hover:bg-indigo-50/30">
                     <input
                       className="mt-1 h-4 w-4"
                       name={`timer-answer-${currentQuestion.code}-${currentIndex}`}
@@ -247,11 +258,11 @@ export default function TimerGame() {
 
                 <div className="flex flex-wrap gap-2">
                   {!feedback ? (
-                    <button className="rounded-lg bg-accent px-5 py-3 font-bold text-white hover:bg-accent-strong" type="submit">
+                    <button className="btn-primary" type="submit">
                       Responder
                     </button>
                   ) : (
-                    <button className="rounded-lg bg-accent px-5 py-3 font-bold text-white hover:bg-accent-strong" type="button" onClick={nextQuestion}>
+                    <button className="btn-primary" type="button" onClick={nextQuestion}>
                       Próxima
                     </button>
                   )}
@@ -263,20 +274,20 @@ export default function TimerGame() {
           )}
 
           {status === "finished" && (
-            <section className="mt-5 rounded-lg border border-line bg-soft p-4">
+            <section className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
               <p className="text-sm font-bold uppercase tracking-wide text-muted">Resultado final</p>
               <h3 className="mt-1 text-3xl font-extrabold">{score} pontos</h3>
               <p className="mt-2 text-muted">
                 Você respondeu {results.length} questão{results.length === 1 ? "" : "ões"}: {correctCount} acerto{correctCount === 1 ? "" : "s"}, {partialCount} parcial{partialCount === 1 ? "" : "is"} e {incorrectCount} erro{incorrectCount === 1 ? "" : "s"}.
               </p>
-              <button className="mt-4 rounded-lg bg-accent px-5 py-3 font-bold text-white hover:bg-accent-strong" onClick={resetGame}>
+              <button className="btn-primary mt-4" onClick={resetGame}>
                 Jogar novamente
               </button>
             </section>
           )}
-        </>
+        </div>
       ) : (
-        <div className="mt-5">
+        <div className="p-5">
           <EmptyState text="Importe questões em PDF na página inicial para liberar o Contra o Tempo." />
         </div>
       )}
@@ -286,11 +297,11 @@ export default function TimerGame() {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-lg border border-line bg-soft p-3">
-      <p className="text-sm font-bold text-muted">{label}</p>
-      <strong className="text-2xl">{value}</strong>
+    <div className="rounded-2xl border border-line bg-surface-soft p-4">
+      <p className="text-sm font-bold text-text-muted">{label}</p>
+      <strong className="text-2xl text-text">{value}</strong>
     </div>
   );
 }
 
-const inputClass = "rounded-lg border border-line px-3 py-3 text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/15";
+const inputClass = "input-base";
