@@ -1,6 +1,6 @@
 import EmptyState from "@/components/EmptyState";
 
-export default function PerformancePanel({ performance }) {
+export default function StatsPanel({ performance }) {
   const accuracy = performance.total
     ? Math.round(((performance.correct + performance.partial * 0.5) / performance.total) * 100)
     : 0;
@@ -9,16 +9,16 @@ export default function PerformancePanel({ performance }) {
     <section id="desempenho" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-4 sm:p-5">
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-muted">Meu desempenho</p>
+          <p className="text-sm font-bold uppercase text-muted">Meu desempenho</p>
           <h3 className="text-lg font-extrabold">Evolução por tópico</h3>
         </div>
-        <span className="rounded-lg bg-soft px-3 py-2 text-sm font-bold text-muted">{accuracy}% geral</span>
+        <span className="w-fit rounded-lg bg-soft px-3 py-2 text-sm font-bold text-muted">{accuracy}% geral</span>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Respondidas" value={performance.total} />
         <Metric label="Acertos" value={performance.correct} />
-        <Metric label="Parciais" value={performance.partial} />
+        <Metric label="Erros" value={performance.incorrect} />
         <Metric label="Dias seguidos" value={performance.streakDays} />
       </div>
 
@@ -52,14 +52,14 @@ function Metric({ label, value }) {
 
 function StatsList({ title, items }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h4 className="font-extrabold">{title}</h4>
       <div className="mt-2 grid gap-2">
         {items.length ? items.map((item) => (
           <div key={item.name} className="rounded-lg border border-line p-3">
             <div className="flex justify-between gap-3 text-sm font-bold">
-              <span>{item.name}</span>
-              <span>{item.accuracy}%</span>
+              <span className="break-words">{item.name}</span>
+              <span className="shrink-0">{item.accuracy}%</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft">
               <div className="h-full bg-accent" style={{ width: `${item.accuracy}%` }} />
@@ -74,11 +74,11 @@ function StatsList({ title, items }) {
 
 function SimpleList({ title, items }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h4 className="font-extrabold">{title}</h4>
       <div className="mt-2 grid gap-2">
         {items.length ? items.map((item) => (
-          <div key={item} className="rounded-lg border border-line p-3 text-sm">{item}</div>
+          <div key={item} className="break-words rounded-lg border border-line p-3 text-sm">{item}</div>
         )) : <EmptyState text="Nada crítico por enquanto." />}
       </div>
     </div>

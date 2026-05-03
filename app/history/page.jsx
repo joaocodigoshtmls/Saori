@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import HistoryPanel from "@/components/HistoryPanel";
 import Navbar from "@/components/Navbar";
 import { HISTORY_KEY } from "@/lib/storage/keys";
-import { readStorage, writeStorage } from "@/lib/storage/questionStorage";
+import { normalizeHistoryItems, readStorage, writeStorage } from "@/lib/storage/questionStorage";
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setHistory(readStorage(HISTORY_KEY, []));
+    setHistory(normalizeHistoryItems(readStorage(HISTORY_KEY, [])));
     setIsReady(true);
   }, []);
 

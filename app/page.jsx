@@ -1,254 +1,287 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import ImportPdfBox from "@/components/ImportPdfBox";
+import Link from "next/link";
+import CelestialCard from "@/components/CelestialCard";
 import Navbar from "@/components/Navbar";
-import QuestionCard from "@/components/QuestionCard";
-import QuestionList from "@/components/QuestionList";
-import TopicList from "@/components/TopicList";
-import { exportTopicPdf } from "@/lib/export/exportTopicPdf";
-import { gradeDiscursive } from "@/lib/grading/gradeDiscursive";
-import { gradeMultiple } from "@/lib/grading/gradeMultiple";
-import { extractPdfText } from "@/lib/pdf/extractPdfText";
-import { parseQuestionsFromText } from "@/lib/pdf/parseQuestions";
-import { groupByTopic, mergeQuestions } from "@/lib/questions/questionLibrary";
-import { HISTORY_KEY, STORAGE_KEY } from "@/lib/storage/keys";
-import { readStorage, writeStorage } from "@/lib/storage/questionStorage";
-import { normalize } from "@/lib/utils/text";
 
-const EXPORT_MINIMUM = 100;
+const toolCards = [
+  {
+    href: "/questions",
+    icon: "📖",
+    title: "Questões",
+    text: "Treine com questões organizadas por tópicos e disciplinas."
+  },
+  {
+    href: "/questions#importar",
+    icon: "☁️",
+    title: "Importar PDF",
+    text: "Envie seus PDFs e o Saori extrai o conteúdo para criar questões."
+  },
+  {
+    href: "/performance",
+    icon: "📊",
+    title: "Desempenho",
+    text: "Acompanhe sua evolução com relatórios detalhados."
+  },
+  {
+    href: "/games",
+    icon: "🎮",
+    title: "Mini-games",
+    text: "Aprenda se divertindo com desafios rápidos e recompensas."
+  }
+];
+
+const topics = [
+  "Todos",
+  "Direito Constitucional",
+  "Direito Administrativo",
+  "Direito Penal",
+  "Direito Civil",
+  "Português",
+  "+18"
+];
 
 export default function Home() {
-  const [questions, setQuestions] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [selectedCode, setSelectedCode] = useState("");
-  const [search, setSearch] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState(null);
-  const [importStatus, setImportStatus] = useState(null);
-  const [importErrors, setImportErrors] = useState([]);
-  const [isImporting, setIsImporting] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [startedAt, setStartedAt] = useState(Date.now());
-
-  useEffect(() => {
-    const savedQuestions = readStorage(STORAGE_KEY, []);
-    const savedHistory = readStorage(HISTORY_KEY, []);
-    setQuestions(savedQuestions);
-    setHistory(savedHistory);
-    setSelectedTopic(savedQuestions[0]?.topic || "");
-    setSelectedCode(savedQuestions[0]?.code || "");
-    setIsReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isReady) return;
-    writeStorage(STORAGE_KEY, questions);
-  }, [isReady, questions]);
-
-  useEffect(() => {
-    if (!isReady) return;
-    writeStorage(HISTORY_KEY, history);
-  }, [history, isReady]);
-
-  useEffect(() => {
-    setStartedAt(Date.now());
-  }, [selectedCode]);
-
-  const topics = useMemo(() => groupByTopic(questions), [questions]);
-  const activeTopic = selectedTopic || topics[0]?.name || "";
-
-  const topicQuestions = useMemo(() => {
-    return questions.filter((question) => question.topic === activeTopic);
-  }, [activeTopic, questions]);
-
-  const filteredQuestions = useMemo(() => {
-    const needle = normalize(search);
-    return topicQuestions.filter((question) => {
-      const haystack = normalize(`${question.code} ${question.type} ${question.statement}`);
-      return haystack.includes(needle);
-    });
-  }, [topicQuestions, search]);
-
-  const selectedQuestion = useMemo(() => {
-    return questions.find((question) => question.code === selectedCode) || topicQuestions[0] || questions[0] || null;
-  }, [questions, selectedCode, topicQuestions]);
-
-  function selectTopic(topicName) {
-    const firstQuestion = questions.find((question) => question.topic === topicName);
-    setSelectedTopic(topicName);
-    setSelectedCode(firstQuestion?.code || "");
-    setAnswer("");
-    setFeedback(null);
-  }
-
-  function selectQuestion(code) {
-    setSelectedCode(code);
-    setAnswer("");
-    setFeedback(null);
-  }
-
-  async function importPdf(event) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-
-    setIsImporting(true);
-    setImportErrors([]);
-    setImportStatus({ tone: "neutral", text: "Lendo PDF..." });
-
-    try {
-      const text = await extractPdfText(file);
-      const importResult = parseQuestionsFromText(text, file.name);
-      const importedQuestions = importResult.questions;
-      setImportErrors(importResult.errors);
-
-      if (!importedQuestions.length) {
-        setImportStatus({
-          tone: "error",
-          text: importResult.errors.length
-            ? "Nenhuma questão válida foi importada. Veja os blocos que precisam de ajuste."
-            : "Não encontrei blocos no PDF. Use blocos separados por --- com TOPICO, CODIGO, TIPO, ENUNCIADO e os campos de resposta."
-        });
-        return;
-      }
-
-      setQuestions((current) => mergeQuestions(current, importedQuestions));
-      setSelectedTopic(importedQuestions[0].topic);
-      setSelectedCode(importedQuestions[0].code);
-      setAnswer("");
-      setFeedback(null);
-      setImportStatus({
-        tone: "success",
-        text: `${importedQuestions.length} questão${importedQuestions.length === 1 ? "" : "ões"} importada${importedQuestions.length === 1 ? "" : "s"} de ${file.name}.${importResult.errors.length ? ` ${importResult.errors.length} bloco${importResult.errors.length === 1 ? "" : "s"} precisa${importResult.errors.length === 1 ? "" : "m"} de ajuste.` : ""}`
-      });
-    } catch (error) {
-      setImportStatus({ tone: "error", text: error.message || "Não foi possível ler o PDF." });
-    } finally {
-      setIsImporting(false);
-    }
-  }
-
-  function gradeAnswer(event) {
-    event.preventDefault();
-    if (!selectedQuestion) return;
-
-    const result = selectedQuestion.type === "multiple"
-      ? gradeMultiple(selectedQuestion, answer)
-      : gradeDiscursive(selectedQuestion, answer);
-
-    setFeedback(result);
-    if (!result.shouldSave) return;
-
-    setHistory((current) => [
-      {
-        code: selectedQuestion.code,
-        topic: selectedQuestion.topic,
-        type: selectedQuestion.type,
-        result: result.title,
-        status: result.status,
-        answer,
-        timeSpentSeconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
-        date: new Date().toISOString()
-      },
-      ...current
-    ]);
-  }
-
   return (
-    <>
-    <Navbar />
-    <main id="top" className="min-h-screen scroll-mt-24 p-3 text-ink sm:p-6">
-      <div
-        className="mx-auto grid max-w-[1380px] gap-5 transition-[grid-template-columns] duration-300 ease-out xl:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
-        style={{ "--sidebar-width": isSidebarOpen ? "360px" : "0px" }}
-      >
-        <aside
-          className={`overflow-hidden rounded-lg transition-all duration-300 ease-out ${
-            isSidebarOpen
-              ? "max-h-[2200px] border border-line/90 bg-white/90 p-4 opacity-100 shadow-panel xl:min-h-[calc(100vh-48px)] xl:max-h-none"
-              : "pointer-events-none max-h-0 border-0 bg-transparent p-0 opacity-0 shadow-none xl:max-h-none"
-          }`}
-          aria-hidden={!isSidebarOpen}
-        >
-            <button
-              className="flex w-full items-center justify-between gap-3 rounded-lg border border-line bg-white px-3 py-3 text-left font-bold hover:bg-soft"
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              aria-expanded={isSidebarOpen}
-            >
-              <span>Ocultar biblioteca</span>
-              <span className="text-lg leading-none">−</span>
-            </button>
+    <main className="min-h-screen overflow-hidden bg-saori-light text-slate-900 dark:bg-saori-dark dark:text-slate-100">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="saori-glow absolute left-12 top-32 text-5xl text-yellow-300/60">✦</div>
+        <div className="saori-glow absolute right-24 top-44 text-4xl text-violet-300/60">✧</div>
+        <div className="absolute left-1/2 top-28 h-72 w-72 rounded-full bg-violet-300/20 blur-3xl dark:bg-violet-700/20" />
+      </div>
 
-            <div className="mt-4">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent font-extrabold text-white">Q</div>
-                <div>
-                  <h1 className="text-lg font-extrabold">Banco de Questões</h1>
-                  <p className="text-sm text-muted">Biblioteca por tópico.</p>
+      <Navbar />
+
+      <section className="relative mx-auto max-w-7xl px-5 pb-12 pt-14">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="saori-fade-up">
+            <p className="mb-4 text-sm font-bold uppercase text-yellow-600 dark:text-yellow-300">
+              Plataforma de estudos <span className="text-yellow-400">✦</span>
+            </p>
+
+            <h1 className="font-display text-5xl font-bold leading-tight text-violet-950 dark:text-violet-100 md:text-7xl">
+              Estude por questões <br />
+              com o Saori <span className="text-yellow-500">✦</span>
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+              Importe PDFs, organize por tópicos, acompanhe seu desempenho e treine com mini-games.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/questions"
+                className="rounded-2xl bg-violet-700 px-7 py-4 font-bold text-white shadow-celestial transition hover:-translate-y-1 hover:bg-violet-800"
+              >
+                ✦ Começar agora
+              </Link>
+
+              <Link
+                href="/questions#importar"
+                className="rounded-2xl border border-violet-300 bg-white/70 px-7 py-4 font-bold text-violet-800 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-md dark:border-violet-500/50 dark:bg-slate-900/70 dark:text-violet-200"
+              >
+                ⬆ Importar PDF
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative hidden min-h-[420px] lg:block">
+            <div className="absolute inset-0 rounded-full bg-violet-200/40 blur-3xl dark:bg-violet-700/20" />
+
+            <div className="relative rounded-[2rem] border border-white/70 bg-white/30 p-8 text-center shadow-celestial backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/30">
+              <div className="mx-auto flex h-72 w-72 items-center justify-center rounded-full border border-yellow-300/60 bg-gradient-to-br from-white/80 to-violet-100/80 shadow-gold dark:from-slate-900 dark:to-violet-950">
+                <div className="text-center">
+                  <div className="text-8xl">♛</div>
+                  <p className="mt-4 font-display text-3xl font-bold text-violet-800 dark:text-violet-200">
+                    Sabedoria
+                  </p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    constelações • estudo • progresso
+                  </p>
                 </div>
               </div>
-
-              <ImportPdfBox
-                isImporting={isImporting}
-                importStatus={importStatus}
-                importErrors={importErrors}
-                onImportPdf={importPdf}
-              />
-
-              <TopicList
-                topics={topics}
-                selectedTopic={activeTopic}
-                totalQuestions={questions.length}
-                exportMinimum={EXPORT_MINIMUM}
-                onSelectTopic={selectTopic}
-              />
             </div>
-        </aside>
+          </div>
+        </div>
 
-        <section className="rounded-lg border border-line/90 bg-white/90 p-4 shadow-panel transition-all duration-300 ease-out sm:p-6 xl:min-h-[calc(100vh-48px)]">
-          {!isSidebarOpen && (
-            <button
-              className="mb-4 flex w-fit items-center gap-3 rounded-lg border border-line bg-white px-4 py-3 font-bold transition hover:bg-soft"
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              aria-expanded={isSidebarOpen}
-            >
-              <span className="text-lg leading-none">+</span>
-              <span>Mostrar biblioteca</span>
-            </button>
-          )}
+        <section className="mt-12">
+          <h2 className="mb-5 font-bold text-violet-900 dark:text-violet-100">
+            <span className="text-yellow-400">✦</span> Ferramentas de estudo
+          </h2>
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(240px,340px)_minmax(0,1fr)]">
-            <QuestionList
-              topicName={activeTopic}
-              topicCount={topicQuestions.length}
-              exportMinimum={EXPORT_MINIMUM}
-              search={search}
-              questions={filteredQuestions}
-              selectedCode={selectedQuestion?.code}
-              onSearch={setSearch}
-              onSelectQuestion={selectQuestion}
-              onExportTopic={() => exportTopicPdf(activeTopic, questions)}
-            />
-
-            <section>
-              <QuestionCard
-                question={selectedQuestion}
-                answer={answer}
-                feedback={feedback}
-                historyCount={history.length}
-                onAnswerChange={setAnswer}
-                onSubmit={gradeAnswer}
-              />
-            </section>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {toolCards.map((tool) => (
+              <ToolCard key={tool.title} {...tool} />
+            ))}
           </div>
         </section>
-      </div>
+
+        <section className="mt-8 grid gap-5 lg:grid-cols-[1.3fr_1fr_0.8fr]">
+          <QuestionPreview />
+          <StatsPreview />
+          <MiniGamePreview />
+        </section>
+
+        <section className="mt-8">
+          <h2 className="mb-4 font-bold text-violet-900 dark:text-violet-100">
+            <span className="text-yellow-400">✦</span> Filtrar por tópico
+          </h2>
+
+          <div className="flex flex-wrap gap-3">
+            {topics.map((topic, index) => (
+              <Link
+                key={topic}
+                href="/questions"
+                className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 ${
+                  index === 0
+                    ? "bg-violet-700 text-white"
+                    : "border border-violet-200 bg-white/70 text-violet-800 dark:border-slate-700 dark:bg-slate-900/70 dark:text-violet-200"
+                }`}
+              >
+                {topic}
+              </Link>
+            ))}
+          </div>
+        </section>
+      </section>
     </main>
-    </>
+  );
+}
+
+function ToolCard({ href, icon, title, text }) {
+  return (
+    <Link href={href} className="block">
+      <CelestialCard className="h-full">
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-yellow-300/60 bg-violet-700 text-2xl shadow-gold">
+            {icon}
+          </div>
+
+          <div>
+            <h3 className="font-display text-xl font-bold text-violet-900 dark:text-violet-100">
+              {title}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {text}
+            </p>
+          </div>
+        </div>
+      </CelestialCard>
+    </Link>
+  );
+}
+
+function QuestionPreview() {
+  const options = [
+    "A soberania popular é exercida exclusivamente por meio do voto.",
+    "O pluralismo político é vedado às associações civis.",
+    "A dignidade da pessoa humana constitui fundamento da República.",
+    "Os valores sociais do trabalho e da livre iniciativa são incompatíveis.",
+    "A cidadania é restrita aos brasileiros natos."
+  ];
+
+  return (
+    <CelestialCard>
+      <h2 className="mb-4 font-bold text-violet-900 dark:text-violet-100">
+        <span className="text-yellow-400">✦</span> Questão em destaque
+      </h2>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700 dark:bg-violet-900/50 dark:text-violet-200">
+          Direito Constitucional
+        </span>
+        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200">
+          Média
+        </span>
+      </div>
+
+      <p className="mb-4 font-medium leading-7 text-slate-700 dark:text-slate-200">
+        Sobre os princípios fundamentais da República Federativa do Brasil, assinale a alternativa correta.
+      </p>
+
+      <div className="space-y-2">
+        {options.map((option, index) => (
+          <div
+            key={option}
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              index === 2
+                ? "border-violet-400 bg-violet-100 text-violet-900 dark:border-violet-400 dark:bg-violet-900/40 dark:text-violet-100"
+                : "border-slate-200 bg-white/70 text-slate-600 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300"
+            }`}
+          >
+            <span className="mr-2 font-bold">{String.fromCharCode(65 + index)}</span>
+            {option}
+          </div>
+        ))}
+      </div>
+    </CelestialCard>
+  );
+}
+
+function StatsPreview() {
+  return (
+    <CelestialCard>
+      <h2 className="mb-4 font-bold text-violet-900 dark:text-violet-100">
+        <span className="text-yellow-400">✦</span> Seu desempenho
+      </h2>
+
+      <p className="text-sm text-slate-500 dark:text-slate-400">Progresso geral</p>
+      <p className="mt-1 text-4xl font-black text-violet-700 dark:text-violet-300">72%</p>
+
+      <div className="mt-4 h-3 rounded-full bg-violet-100 dark:bg-slate-800">
+        <div className="h-3 w-[72%] rounded-full bg-violet-700 dark:bg-violet-400" />
+      </div>
+
+      <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Meta: 80% até 31/05</p>
+
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <Metric title="Questões" value="1.248" />
+        <Metric title="Acertos" value="896" />
+        <Metric title="Sequência" value="12 dias" />
+        <Metric title="Ranking" value="Top 18%" />
+      </div>
+    </CelestialCard>
+  );
+}
+
+function Metric({ title, value }) {
+  return (
+    <div className="rounded-2xl border border-violet-100 bg-white/60 p-3 text-center dark:border-slate-700 dark:bg-slate-950/40">
+      <p className="text-xs text-slate-500 dark:text-slate-400">{title}</p>
+      <p className="mt-1 font-bold text-violet-700 dark:text-violet-300">{value}</p>
+    </div>
+  );
+}
+
+function MiniGamePreview() {
+  return (
+    <CelestialCard className="bg-gradient-to-br from-violet-50/90 to-white/80 dark:from-violet-950/60 dark:to-slate-900/80">
+      <h2 className="mb-4 font-bold text-violet-900 dark:text-violet-100">
+        <span className="text-yellow-400">✦</span> Mini-game
+      </h2>
+
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-300/60 bg-violet-700 text-3xl shadow-gold">
+        ⏱️
+      </div>
+
+      <h3 className="font-display text-2xl font-bold text-violet-900 dark:text-violet-100">
+        Contra o Tempo
+      </h3>
+
+      <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        Responda o máximo de questões corretas antes que o tempo acabe!
+      </p>
+
+      <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+        <span className="rounded-2xl bg-white/70 p-2 dark:bg-slate-950/40">10<br />Questões</span>
+        <span className="rounded-2xl bg-white/70 p-2 dark:bg-slate-950/40">90s<br />Por questão</span>
+        <span className="rounded-2xl bg-white/70 p-2 dark:bg-slate-950/40">+100<br />Bônus</span>
+      </div>
+
+      <Link
+        href="/games"
+        className="mt-6 block w-full rounded-2xl bg-violet-700 py-3 text-center font-bold text-white shadow-celestial transition hover:-translate-y-1 hover:bg-violet-800"
+      >
+        ▶ Jogar agora
+      </Link>
+    </CelestialCard>
   );
 }

@@ -20,11 +20,13 @@ app/
   page.jsx
   performance/page.jsx
 components/
+  GameCard.jsx
   HistoryPanel.jsx
-  ImportPdfBox.jsx
-  PerformancePanel.jsx
+  ImportPdf.jsx
   QuestionCard.jsx
   QuestionList.jsx
+  StatsPanel.jsx
+  ThemeToggle.jsx
   TopicList.jsx
 lib/
   export/
@@ -38,7 +40,8 @@ lib/
 
 ## Páginas
 
-- `/`: questões, tópicos e importação de PDF.
+- `/`: página inicial do Saori.
+- `/questions`: banco de questões, tópicos e importação de PDF.
 - `/performance`: painel de desempenho.
 - `/history`: histórico de respostas.
 - `/games`: área reservada para mini-games.
@@ -62,7 +65,7 @@ O histórico é armazenado completo; a tela mostra apenas os registros mais rece
 
 ## Importação
 
-Ao importar um PDF, o Saori separa questões válidas de blocos com problema. Se algum bloco não tiver campos obrigatórios, a tela mostra uma lista com o número do bloco e o motivo do erro.
+Ao importar um PDF, o Saori separa questões válidas de blocos com problema. Se algum bloco não tiver campos obrigatórios, a tela mostra uma lista com o número do bloco e o motivo do erro. Cada questão precisa ter `TOPICO`, `CODIGO`, `TIPO` e `ENUNCIADO`.
 
 ## Formato do PDF
 

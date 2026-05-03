@@ -13,10 +13,12 @@ export default function HistoryPanel({ history, onClear, limit = 8 }) {
       </div>
       <div className="mt-4 grid gap-2">
         {history.length ? history.slice(0, limit).map((item) => (
-          <div key={`${item.date}-${item.code}`} className={`rounded-lg border-l-4 bg-white p-3 ${historyBorder(item.status)}`}>
-            <strong>{item.code} · {item.result}</strong>
-            <p className="text-sm text-muted">{item.topic} · {formatBrasiliaDate(item.date)}</p>
-            <p className="mt-1">{item.answer}</p>
+          <div key={item.id || `${item.date}-${item.code}-${item.answer}`} className={`min-w-0 rounded-lg border-l-4 bg-white p-3 ${historyBorder(item.status)}`}>
+            <strong className="break-words">{item.code} · {item.result}</strong>
+            <p className="break-words text-sm text-muted">
+              {item.topic} · {typeLabel(item.type)} · {formatBrasiliaDate(item.date)}
+            </p>
+            <p className="mt-1 break-words">{item.answer}</p>
           </div>
         )) : (
           <EmptyState text="As respostas corrigidas aparecem aqui." />
@@ -24,6 +26,10 @@ export default function HistoryPanel({ history, onClear, limit = 8 }) {
       </div>
     </section>
   );
+}
+
+function typeLabel(type) {
+  return type === "multiple" ? "Objetiva" : type === "discursive" ? "Discursiva" : "Sem tipo";
 }
 
 function formatBrasiliaDate(date) {

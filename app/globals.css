@@ -4,18 +4,50 @@
 
 :root {
   color-scheme: light;
-  --bg: #f8fafc;
-  --bg-soft: #eef2ff;
-  --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --line: #e2e8f0;
-  --primary: #4f46e5;
-  --primary-strong: #4338ca;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --warning: #d97706;
+  --background: #f9fafb;
+  --background-soft: #f3e8ff;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --primary: #7c3aed;
+  --primary-soft: #c4b5fd;
+  --secondary: #60a5fa;
+  --accent: #eab308;
+  --success: #22c55e;
+  --danger: #ef4444;
+
+  --bg: var(--background);
+  --bg-soft: var(--background-soft);
+  --surface: var(--card);
+  --surface-soft: var(--background-soft);
+  --line: var(--border);
+  --primary-strong: #6d28d9;
+  --warning: var(--accent);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0f172a;
+  --background-soft: #111827;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #f8fafc;
+  --text-muted: #cbd5e1;
+  --primary: #a78bfa;
+  --primary-soft: #ddd6fe;
+  --secondary: #93c5fd;
+  --accent: #facc15;
+  --success: #4ade80;
+  --danger: #f87171;
+
+  --bg: var(--background);
+  --bg-soft: var(--background-soft);
+  --surface: var(--card);
+  --surface-soft: var(--background-soft);
+  --line: var(--border);
+  --primary-strong: #8b5cf6;
+  --warning: var(--accent);
 }
 
 * {
@@ -31,10 +63,7 @@ body {
   min-height: 100%;
   margin: 0;
   color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(79, 70, 229, 0.08), transparent 25%),
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 20%),
-    var(--bg);
+  background: var(--background);
 }
 
 button,
@@ -44,17 +73,50 @@ select {
   font: inherit;
 }
 
+.saori-fade-up {
+  animation: saoriFadeUp 0.45s ease both;
+}
+
+.saori-glow {
+  animation: saoriGlow 3s ease-in-out infinite;
+}
+
+@keyframes saoriFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes saoriGlow {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
 @layer components {
   .page-shell {
     @apply mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8;
   }
 
   .section-card {
-    @apply rounded-2xl border border-line bg-surface shadow-sm;
+    @apply rounded-3xl border border-violet-100/80 bg-white/80 shadow-sm backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/75;
   }
 
   .section-card-soft {
-    @apply rounded-2xl border border-line bg-surface/85 shadow-sm backdrop-blur;
+    @apply rounded-3xl border border-violet-100/80 bg-white/80 shadow-sm backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/75;
   }
 
   .section-title {
@@ -66,15 +128,15 @@ select {
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-primary-strong;
+    @apply inline-flex items-center justify-center rounded-2xl bg-violet-700 px-4 py-2.5 text-sm font-bold text-white shadow-celestial transition hover:-translate-y-1 hover:bg-violet-800;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-text transition hover:bg-slate-50;
+    @apply inline-flex items-center justify-center rounded-2xl border border-violet-200 bg-white/70 px-4 py-2.5 text-sm font-semibold text-violet-800 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-900/70 dark:text-violet-200;
   }
 
   .input-base {
-    @apply w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-text outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-4 focus:ring-indigo-100;
+    @apply w-full rounded-2xl border border-violet-100 bg-white/80 px-4 py-3 text-sm text-text outline-none transition placeholder:text-text-muted focus:border-violet-400 focus:ring-4 focus:ring-violet-100 dark:border-slate-700 dark:bg-slate-950/50 dark:focus:ring-violet-900/40;
   }
 
   .badge {

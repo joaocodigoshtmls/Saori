@@ -1,3 +1,4 @@
+import GameCard from "@/components/GameCard";
 import TimerGame from "@/components/games/TimerGame";
 import Navbar from "@/components/Navbar";
 
@@ -29,11 +30,7 @@ export default function GamesPage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {plannedGames.map((game) => (
-              <article key={game.title} className="rounded-lg border border-line bg-white p-4">
-                <span className="rounded-lg bg-soft px-3 py-1 text-sm font-bold text-muted">{game.status}</span>
-                <h2 className="mt-4 text-xl font-extrabold">{game.title}</h2>
-                <p className="mt-2 leading-7 text-muted">{game.text}</p>
-              </article>
+              <GameCard key={game.title} {...game} />
             ))}
           </div>
         </section>
